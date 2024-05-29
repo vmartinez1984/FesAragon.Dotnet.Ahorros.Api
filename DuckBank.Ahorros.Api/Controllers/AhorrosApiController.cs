@@ -3,7 +3,6 @@ using DuckBank.Ahorros.Api.Dtos;
 using DuckBank.Ahorros.Api.Services;
 using DuckBank.Ahorros.Api.Persistence;
 using DuckBank.Ahorros.Api.Entities;
-using System.Linq;
 
 namespace DuckBank.Ahorros.Api.Controllers
 {
@@ -38,7 +37,7 @@ namespace DuckBank.Ahorros.Api.Controllers
 
             id = await _repositorio.AgregarAsync(new Entities.Ahorro
             {
-                Guid = ahorroDtoIn.Guid == Guid.Empty ? Guid.NewGuid().ToString() : ahorroDtoIn.Guid.ToString(),
+                Guid = string.IsNullOrEmpty(ahorroDtoIn.Guid) ? Guid.NewGuid().ToString() : ahorroDtoIn.Guid.ToString(),
                 Nombre = ahorroDtoIn.Nombre,
                 Nota = ahorroDtoIn.Nota,
                 ClienteId = ahorroDtoIn.ClienteId,
@@ -59,19 +58,24 @@ namespace DuckBank.Ahorros.Api.Controllers
         [HttpGet("{ahorroId}")]
         public async Task<IActionResult> Get(string ahorroId)
         {
-            AhorroDto ahorroDto;
+            AhorroConDetalleDto ahorroDto;
             Ahorro ahorro;
 
             ahorro = await _repositorio.ObtenerPorIdAsync(ahorroId.ToString());
             if (ahorro == null)
                 return NotFound(new { Mensaje = "Ahorro no encontrado" });
-            ahorroDto = new AhorroDto
+            ahorroDto = new AhorroConDetalleDto
             {
                 Id = ahorro.Id,
                 Nombre = ahorro.Nombre,
                 Total = ahorro.Total,
                 TotalDeDepositos = ahorro.TotalDeDepositos,
                 TotalDeRetiros = ahorro.TotalDeRetiros,
+                Guid = ahorro.Guid,
+                ClienteId = ahorro.ClienteId,
+                ClienteNombre = ahorro.ClienteNombre,
+                Nota = ahorro.Nota,
+                Interes = ahorro.Interes,
                 Depositos = ahorro.Depositos.Select(x => new MovimientoDto
                 {
                     Cantidad = x.Cantidad,
@@ -87,6 +91,32 @@ namespace DuckBank.Ahorros.Api.Controllers
             };
 
             return Ok(ahorroDto);
+        }
+
+        /// <summary>
+        /// Obtener lista de ahorros por cliente Id
+        /// </summary>
+        /// <param name="clienteId"></param>
+        /// <returns></returns>
+        [HttpGet("Clientes/{clienteId}")]
+        public async Task<IActionResult> ObtenerListaDeAhorrosPorClienteIdAsync(string clienteId)
+        {
+            List<AhorroDto> lista;
+
+            lista = (await _repositorio.ObtenerListaDeAhorrosPorClienteIdAsync(clienteId))
+                .Select(x => new AhorroDto
+                {
+                    ClienteId = x.ClienteId,
+                    ClienteNombre = x.ClienteNombre,
+                    Guid = x.Guid,
+                    Id = x.Id,
+                    Interes = x.Interes,
+                    Nombre = x.Nombre,
+                    Nota = x.Nota
+                })
+                .ToList();
+
+            return Ok(lista);
         }
 
         //[HttpGet("{id}/clabes")]
@@ -138,17 +168,17 @@ namespace DuckBank.Ahorros.Api.Controllers
         }
 
         [HttpPost("{id}/Retiro")]
-        public async Task<IActionResult> Retirar(string id,[FromBody] MovimientoDto movimiento)
+        public async Task<IActionResult> Retirar(string id, [FromBody] MovimientoDto movimiento)
         {
             Ahorro ahorro;
             Movimiento movimientoEntity;
 
             ahorro = await _repositorio.ObtenerPorIdAsync(id.ToString());
-            if(movimiento.Cantidad > ahorro.Total)
+            if (movimiento.Cantidad > ahorro.Total)
             {
                 return StatusCode(428, new
                 {
-                    Mensaje= "No hay chivo"
+                    Mensaje = "No hay chivo"
                 });
             }
             movimientoEntity = new Movimiento

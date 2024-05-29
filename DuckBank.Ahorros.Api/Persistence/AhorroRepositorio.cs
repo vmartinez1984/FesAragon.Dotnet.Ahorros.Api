@@ -17,7 +17,7 @@ namespace DuckBank.Ahorros.Api.Persistence
         }
 
         internal async Task ActualizarAsync(Ahorro ahorro)
-        {            
+        {
             await _collection.ReplaceOneAsync(a => a._id == ahorro._id, ahorro);
         }
 
@@ -27,6 +27,17 @@ namespace DuckBank.Ahorros.Api.Persistence
             await _collection.InsertOneAsync(item);
 
             return item.Id;
+        }
+
+        internal async Task<List<Ahorro>> ObtenerListaDeAhorrosPorClienteIdAsync(string clienteId)
+        {
+            List<Ahorro> ahorros;
+            FilterDefinition<Ahorro> filter;
+
+            filter = Builders<Ahorro>.Filter.Eq("ClienteId", clienteId);
+            ahorros = (await _collection.FindAsync(filter)).ToList();
+
+            return ahorros;
         }
 
         internal async Task<Ahorro> ObtenerPorIdAsync(string id)

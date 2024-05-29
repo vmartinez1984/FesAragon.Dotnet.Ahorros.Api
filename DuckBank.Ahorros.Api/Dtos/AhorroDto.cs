@@ -2,10 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DuckBank.Ahorros.Api.Dtos
 {
-    public class AhorroDto
+    public class AhorroConDetalleDto: AhorroDtoIn
     {
-        public int Id { get; set; }
-        public string Nombre { get; set; }
+        public int Id { get; set; }        
         public decimal Total { get; set; }
 
         public decimal TotalDeDepositos { get; set; }
@@ -29,9 +28,16 @@ namespace DuckBank.Ahorros.Api.Dtos
         public string Id { get; set; }
     }
 
+    public class AhorroDto: AhorroDtoIn
+    {
+        public int Id { get; set; }
+    }
+
     public class AhorroDtoIn
     {
-        public Guid Guid { get; set; } = Guid.NewGuid();
+        [Required]
+        [MaxLength(36)]
+        public string Guid { get; set; }
 
         [Required]
         [MaxLength(150)]
