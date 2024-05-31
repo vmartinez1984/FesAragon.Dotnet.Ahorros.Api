@@ -34,7 +34,11 @@ namespace DuckBank.Ahorros.Api.Controllers
             int id;
             string clabe;
             string tarjeta;
+            Ahorro ahorro;
 
+            ahorro = await _repositorio.ObtenerPorIdAsync(ahorroDtoIn.Guid);
+            if(ahorro is not null)
+                return Ok(ahorro);
             id = await _repositorio.AgregarAsync(new Entities.Ahorro
             {
                 Guid = string.IsNullOrEmpty(ahorroDtoIn.Guid) ? Guid.NewGuid().ToString() : ahorroDtoIn.Guid.ToString(),
@@ -45,8 +49,6 @@ namespace DuckBank.Ahorros.Api.Controllers
             });
             clabe = _clabeService.ObtenerClabe(id.ToString());
             tarjeta = _tarjetaDeDebitoService.ObtenerTarjeta();
-            Ahorro ahorro;
-
             ahorro = await _repositorio.ObtenerPorIdAsync(id.ToString());
             ahorro.Otros.Add("clabe", clabe);
             ahorro.Otros.Add("tarjeta", tarjeta);
@@ -118,35 +120,9 @@ namespace DuckBank.Ahorros.Api.Controllers
 
             return Ok(lista);
         }
-
-        //[HttpGet("{id}/clabes")]
-        //public async Task<IActionResult> ObtenerCuentaClabe(string id)
-        //{
-        //    string clabe;
-        //    Ahorro ahorro;
-
-        //    ahorro = await _repositorio.ObtenerPorIdAsync(id);
-        //    if (ahorro == null)
-        //        return NotFound(new { Mensaje = "Ahorro no encontrado" });
-        //    if (ahorro.Otros is null)
-        //    {
-        //        clabe = null;
-        //        ahorro.Otros = new Dictionary<string, string> { };
-        //    }
-        //    else
-        //        clabe = ahorro.Otros.GetValueOrDefault("clabe");
-        //    if (string.IsNullOrEmpty(clabe))
-        //    {
-        //        clabe = _clabeService.ObtenerClabe(id);
-        //        ahorro.Otros.Add("clabe", clabe);
-        //        await _repositorio.ActualizarAsync(ahorro);
-        //    }
-
-        //    return Created("", new { clabe });
-        //}
-
-        [HttpPost("{id}/Deposito")]
-        public async Task<IActionResult> Depositar(string id, [FromBody] MovimientoDto movimiento)
+              
+        [HttpPost("{id}/Depositos")]
+        public async Task<IActionResult> Depositar(string id, [FromBody] MovimientoDtoIn movimiento)
         {
             Ahorro ahorro;
             Movimiento movimientoEntity;
@@ -167,7 +143,7 @@ namespace DuckBank.Ahorros.Api.Controllers
             return Created("", movimiento);
         }
 
-        [HttpPost("{id}/Retiro")]
+        [HttpPost("{id}/Retiros")]
         public async Task<IActionResult> Retirar(string id, [FromBody] MovimientoDto movimiento)
         {
             Ahorro ahorro;

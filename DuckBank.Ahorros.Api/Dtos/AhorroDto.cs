@@ -16,10 +16,20 @@ namespace DuckBank.Ahorros.Api.Dtos
 
     public class MovimientoDto
     {
-        public decimal Cantidad { get; set; }
-        public Guid Guid { get; set; }
+        public decimal Cantidad { get; set; }        
 
         public DateTime FechaDeRegistro { get; set; }
+
+        public string Concepto { get; set; }
+
+        public string Referencia { get; set; }
+
+        public string Id { get; set; }
+    }
+
+    public class MovimientoDtoIn
+    {
+        public decimal Cantidad { get; set; }        
 
         public string Concepto { get; set; }
 
