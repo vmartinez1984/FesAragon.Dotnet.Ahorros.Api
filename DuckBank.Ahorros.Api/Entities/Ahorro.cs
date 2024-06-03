@@ -9,26 +9,18 @@ namespace DuckBank.Ahorros.Api.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string _id { get; set; }
         public int Id { get; set; }
-
         public string Guid { get; set; }
         public string Nombre { get; set; }
-        public decimal Total { get; set; }
-
-        public decimal TotalDeDepositos { get; set; }
-        public decimal TotalDeRetiros { get; set; }
-
+        public decimal Total { get; set; }               
         public List<Movimiento> Depositos { get; set; } = new List<Movimiento>();
-        public List<Movimiento> Retiros { get; set; } = new List<Movimiento> { };        
-
-        public string Nota { get; set; }       
-
-        public string ClienteId { get; set; }
-
-        public string ClienteNombre { get; set; }
-
-        public int Interes { get; set; }
-
+        public List<Movimiento> Retiros { get; set; } = new List<Movimiento> { };
+        public string ClienteId { get; set; }         
         public Dictionary<string, string> Otros { get; set; } = new Dictionary<string, string>();
+        public decimal Interes { get;  set; }
+
+        public DateTime FechaDeRegistro { get; set; } = DateTime.Now;
+
+        public string Estado { get; set; } = "Activo";
     }
 
     public class Movimiento

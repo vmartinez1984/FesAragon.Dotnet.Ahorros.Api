@@ -37,21 +37,20 @@ namespace DuckBank.Ahorros.Api.Controllers
             Ahorro ahorro;
 
             ahorro = await _repositorio.ObtenerPorIdAsync(ahorroDtoIn.Guid);
-            if(ahorro is not null)
+            if (ahorro is not null)
                 return Ok(ahorro);
             id = await _repositorio.AgregarAsync(new Entities.Ahorro
             {
                 Guid = string.IsNullOrEmpty(ahorroDtoIn.Guid) ? Guid.NewGuid().ToString() : ahorroDtoIn.Guid.ToString(),
                 Nombre = ahorroDtoIn.Nombre,
-                Nota = ahorroDtoIn.Nota,
-                ClienteId = ahorroDtoIn.ClienteId,
-                ClienteNombre = ahorroDtoIn.ClienteNombre
+                ClienteId = ahorroDtoIn.ClienteId                
             });
             clabe = _clabeService.ObtenerClabe(id.ToString());
             tarjeta = _tarjetaDeDebitoService.ObtenerTarjeta();
             ahorro = await _repositorio.ObtenerPorIdAsync(id.ToString());
             ahorro.Otros.Add("clabe", clabe);
-            ahorro.Otros.Add("tarjeta", tarjeta);
+            ahorro.Otros.Add("tarjeta", tarjeta);            
+            ahorro.Otros.Add("clienteNombre", ahorroDtoIn.ClienteNombre);
             await _repositorio.ActualizarAsync(ahorro);
 
             return Created($"Ahorros/{id}", new { id });
@@ -70,14 +69,10 @@ namespace DuckBank.Ahorros.Api.Controllers
             {
                 Id = ahorro.Id,
                 Nombre = ahorro.Nombre,
-                Total = ahorro.Total,
-                TotalDeDepositos = ahorro.TotalDeDepositos,
-                TotalDeRetiros = ahorro.TotalDeRetiros,
+                Total = ahorro.Total,                
                 Guid = ahorro.Guid,
                 ClienteId = ahorro.ClienteId,
-                ClienteNombre = ahorro.ClienteNombre,
-                Nota = ahorro.Nota,
-                Interes = ahorro.Interes,
+                ClienteNombre = ahorro.Otros.Where(x=> x.Key == "clienteNombre").First().Value,
                 Depositos = ahorro.Depositos.Select(x => new MovimientoDto
                 {
                     Cantidad = x.Cantidad,
@@ -89,7 +84,8 @@ namespace DuckBank.Ahorros.Api.Controllers
                     Cantidad = x.Cantidad,
                     FechaDeRegistro = x.FechaDeRegistro,
                     Id = x.Id
-                }).ToList()
+                }).ToList(),
+                Otros = ahorro.Otros
             };
 
             return Ok(ahorroDto);
@@ -109,12 +105,11 @@ namespace DuckBank.Ahorros.Api.Controllers
                 .Select(x => new AhorroDto
                 {
                     ClienteId = x.ClienteId,
-                    ClienteNombre = x.ClienteNombre,
+                    ClienteNombre = x.Otros.Where(x => x.Key == "ClienteNombre").First().Value,
                     Guid = x.Guid,
                     Id = x.Id,
                     Interes = x.Interes,
-                    Nombre = x.Nombre,
-                    Nota = x.Nota
+                    Nombre = x.Nombre                    
                 })
                 .ToList();
 
