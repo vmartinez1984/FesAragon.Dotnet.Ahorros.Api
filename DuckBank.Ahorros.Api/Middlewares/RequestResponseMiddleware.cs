@@ -92,7 +92,7 @@ namespace DuckBank.Ahorros.Api.Middlewares
                 context.Response.Body = originalBodyStream;
                 await context.Response.Body.WriteAsync(memoryStream.ToArray());
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await _next(context);
             }

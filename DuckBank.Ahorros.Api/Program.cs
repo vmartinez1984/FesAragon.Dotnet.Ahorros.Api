@@ -3,9 +3,12 @@ using DuckBank.Ahorros.Api.HttpLoggers;
 using DuckBank.Ahorros.Api.Middlewares;
 using DuckBank.Ahorros.Api.Persistence;
 using DuckBank.Ahorros.Api.Services;
+using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.ConfigureSerilog();
 
 // Add services to the container.
 builder.Services.AddScoped<AhorroRepositorio>();
@@ -16,19 +19,31 @@ builder.Services.AddScoped<HttpLogger>();
 builder.Services.AddScoped<HttpLoggerRepository>();
 //RequestResponse
 builder.Services.AddTransient<RequestResponseRepository>();
-//builder.Services.AddScoped<RequestResponseMiddleware>();
 //HttpClientFactory
 builder.Services.AddHttpClient(string.Empty, client => { }).RemoveAllLoggers().AddLogger<HttpLogger>();
 //Serilog
-builder.Host.UseSerilog((context, config) =>
-{
-    config.ReadFrom.Configuration(context.Configuration);
-});
+builder.Services.AddLogging(logger => logger.AddSerilog());
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v2.0",
+        Title = "Ahorros Duckbank",
+        Description = @"Cuentas de ahorro",
+        Contact = new OpenApiContact
+        {
+            Name = "Víctor Martínez",
+            Url = new Uri("mailto:ahal_tocob@hotmail.com")
+        }
+    });
+    // using System.Reflection;
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+});
 
 builder.Services.AddCors(options =>
 {

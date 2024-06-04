@@ -55,7 +55,7 @@ namespace DuckBank.Ahorros.Api.Persistence
 
                 return ahorro;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

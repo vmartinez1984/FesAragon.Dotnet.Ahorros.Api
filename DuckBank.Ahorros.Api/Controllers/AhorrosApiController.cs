@@ -3,6 +3,7 @@ using DuckBank.Ahorros.Api.Dtos;
 using DuckBank.Ahorros.Api.Services;
 using DuckBank.Ahorros.Api.Persistence;
 using DuckBank.Ahorros.Api.Entities;
+using Serilog;
 
 namespace DuckBank.Ahorros.Api.Controllers
 {
@@ -26,6 +27,8 @@ namespace DuckBank.Ahorros.Api.Controllers
             _tarjetaDeDebitoService = tarjetaDeDebitoService;
             _logger = logger;
             _repositorio = repositorio;
+
+            _logger.LogInformation(new EventId(), "Hola mundo");
         }
 
         [HttpPost]
@@ -43,13 +46,13 @@ namespace DuckBank.Ahorros.Api.Controllers
             {
                 Guid = string.IsNullOrEmpty(ahorroDtoIn.Guid) ? Guid.NewGuid().ToString() : ahorroDtoIn.Guid.ToString(),
                 Nombre = ahorroDtoIn.Nombre,
-                ClienteId = ahorroDtoIn.ClienteId                
+                ClienteId = ahorroDtoIn.ClienteId
             });
             clabe = _clabeService.ObtenerClabe(id.ToString());
             tarjeta = _tarjetaDeDebitoService.ObtenerTarjeta();
             ahorro = await _repositorio.ObtenerPorIdAsync(id.ToString());
             ahorro.Otros.Add("clabe", clabe);
-            ahorro.Otros.Add("tarjeta", tarjeta);            
+            ahorro.Otros.Add("tarjeta", tarjeta);
             ahorro.Otros.Add("clienteNombre", ahorroDtoIn.ClienteNombre);
             await _repositorio.ActualizarAsync(ahorro);
 
@@ -59,6 +62,9 @@ namespace DuckBank.Ahorros.Api.Controllers
         [HttpGet("{ahorroId}")]
         public async Task<IActionResult> Get(string ahorroId)
         {
+            _logger.LogInformation("Hola mundo");
+            Log.CloseAndFlush();
+
             AhorroConDetalleDto ahorroDto;
             Ahorro ahorro;
 
@@ -69,10 +75,10 @@ namespace DuckBank.Ahorros.Api.Controllers
             {
                 Id = ahorro.Id,
                 Nombre = ahorro.Nombre,
-                Total = ahorro.Total,                
+                Total = ahorro.Total,
                 Guid = ahorro.Guid,
                 ClienteId = ahorro.ClienteId,
-                ClienteNombre = ahorro.Otros.Where(x=> x.Key == "clienteNombre").First().Value,
+                ClienteNombre = ahorro.Otros.Count > 0 ? ahorro.Otros.Where(x => x.Key == "clienteNombre").First().Value : string.Empty,
                 Depositos = ahorro.Depositos.Select(x => new MovimientoDto
                 {
                     Cantidad = x.Cantidad,
@@ -109,13 +115,13 @@ namespace DuckBank.Ahorros.Api.Controllers
                     Guid = x.Guid,
                     Id = x.Id,
                     Interes = x.Interes,
-                    Nombre = x.Nombre                    
+                    Nombre = x.Nombre
                 })
                 .ToList();
 
             return Ok(lista);
         }
-              
+
         [HttpPost("{id}/Depositos")]
         public async Task<IActionResult> Depositar(string id, [FromBody] MovimientoDtoIn movimiento)
         {
