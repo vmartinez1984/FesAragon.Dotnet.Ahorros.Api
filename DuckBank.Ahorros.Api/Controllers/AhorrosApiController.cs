@@ -111,7 +111,7 @@ namespace DuckBank.Ahorros.Api.Controllers
                 .Select(x => new AhorroDto
                 {
                     ClienteId = x.ClienteId,
-                    ClienteNombre = x.Otros.Where(x => x.Key == "ClienteNombre").First().Value,
+                    ClienteNombre = x.Otros.Count > 0 ? x.Otros.Where(x => x.Key == "clienteNombre").First().Value : string.Empty,
                     Guid = x.Guid,
                     Id = x.Id,
                     Interes = x.Interes,
@@ -145,7 +145,7 @@ namespace DuckBank.Ahorros.Api.Controllers
         }
 
         [HttpPost("{id}/Retiros")]
-        public async Task<IActionResult> Retirar(string id, [FromBody] MovimientoDto movimiento)
+        public async Task<IActionResult> Retirar(string id, [FromBody] MovimientoDtoIn movimiento)
         {
             Ahorro ahorro;
             Movimiento movimientoEntity;
@@ -166,7 +166,7 @@ namespace DuckBank.Ahorros.Api.Controllers
                 Id = movimiento.Id,
                 Referencia = movimiento.Referencia,
             };
-            ahorro.Depositos.Add(movimientoEntity);
+            ahorro.Retiros.Add(movimientoEntity);
             ahorro.Total = ahorro.Depositos.Sum(x => x.Cantidad) - ahorro.Retiros.Sum(x => x.Cantidad);
             await _repositorio.ActualizarAsync(ahorro);
 
