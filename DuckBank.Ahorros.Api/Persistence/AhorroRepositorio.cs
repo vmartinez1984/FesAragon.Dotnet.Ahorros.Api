@@ -1,18 +1,17 @@
 using DuckBank.Ahorros.Api.Entities;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace DuckBank.Ahorros.Api.Persistence
 {
     public class AhorroRepositorio
     {
-
         private readonly IMongoCollection<Ahorro> _collection;
+
         public AhorroRepositorio(IConfiguration configurations)
         {
-            var mongoClient = new MongoClient(
-                configurations.GetConnectionString("mongoDb")
-            );
-            var mongoDatabase = mongoClient.GetDatabase("DuckBank");
+            var mongoClient = new MongoClient(configurations.GetConnectionString("mongoDb"));
+            var mongoDatabase = mongoClient.GetDatabase(configurations.GetConnectionString("mongoDbNombre"));
             _collection = mongoDatabase.GetCollection<Ahorro>("Ahorros");
         }
 
@@ -60,5 +59,45 @@ namespace DuckBank.Ahorros.Api.Persistence
                 return null;
             }
         }
+
+        internal async Task<List<Ahorro>> GetAsync(PagerEntity pager)
+        {
+            List<Ahorro> entities;
+            FilterDefinition<Ahorro> filter;
+
+            if (string.IsNullOrEmpty(pager.Search))
+                filter = Builders<Ahorro>.Filter.Where(_ => true);
+            else
+                filter = Builders<Ahorro>.Filter
+                .Where(x => x.Nombre.ToLower().Contains(pager.Search.ToLower()));
+
+            entities = await _collection.Find(filter)
+                .Sort("{Id:1}")
+                .Skip((pager.PageCurrent - 1) * pager.RecordsPerPage)
+                .Limit(pager.RecordsPerPage)
+                .ToListAsync();
+
+            pager.TotalRecordsFiltered = entities.Count();
+            pager.TotalRecords = (int)await _collection.CountDocumentsAsync(new BsonDocument());
+
+            return entities;
+        }
+    }
+
+    public class PagerEntity
+    {
+        public int PageCurrent { get; set; } = 1;
+
+        public int RecordsPerPage { get; set; } = 10;
+
+        public string Search { get; set; }
+
+        public string SortColumn { get; set; }
+
+        public string SortColumnDir { get; set; }
+
+        public int TotalRecords { get; set; }
+
+        public int TotalRecordsFiltered { get; set; }
     }
 }

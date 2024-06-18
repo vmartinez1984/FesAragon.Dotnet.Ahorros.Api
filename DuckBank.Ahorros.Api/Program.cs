@@ -61,7 +61,10 @@ var app = builder.Build();
 app.UseCors();
 // Configure the HTTP request pipeline.
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(x =>
+{
+    x.SwaggerEndpoint("/swagger/v1/swagger.json", "");
+});
 
 app.UseMiddleware<RequestResponseMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
