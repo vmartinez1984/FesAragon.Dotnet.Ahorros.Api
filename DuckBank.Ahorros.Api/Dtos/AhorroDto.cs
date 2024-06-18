@@ -37,6 +37,7 @@ namespace DuckBank.Ahorros.Api.Dtos
     public class AhorroDto : AhorroDtoIn
     {
         public int Id { get; set; }
+        public decimal Total { get; set; }
     }
 
     public class AhorroDtoIn

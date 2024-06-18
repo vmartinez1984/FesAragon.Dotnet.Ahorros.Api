@@ -28,6 +28,17 @@ namespace DuckBank.Ahorros.Api.Persistence
             return item.Id;
         }
 
+        internal async Task<List<Ahorro>> ObtenerAsync()
+        {
+            List<Ahorro> ahorros;
+            // FilterDefinition<Ahorro> filter;
+
+            // filter = Builders<Ahorro>.Filter.Eq("ClienteId", clienteId);
+            ahorros = (await _collection.FindAsync(_ => true)).ToList();
+
+            return ahorros;
+        }
+
         internal async Task<List<Ahorro>> ObtenerListaDeAhorrosPorClienteIdAsync(string clienteId)
         {
             List<Ahorro> ahorros;

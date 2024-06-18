@@ -22,9 +22,10 @@
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, exception.Message);
+                EventId eventId = new EventId(0,Guid.NewGuid().ToString());
+                logger.LogError(eventId, exception, exception.Message);
                 context.Response.StatusCode = 500;
-                await context.Response.WriteAsJsonAsync(new { Mensaje = "El minge ya esta reiniciado el servidor", Guid = Guid.NewGuid() });
+                await context.Response.WriteAsJsonAsync(new { Mensaje = "El minge ya esta reiniciado el servidor", Id = eventId.Name });
                 // DO SOMETHING
             }
         }
