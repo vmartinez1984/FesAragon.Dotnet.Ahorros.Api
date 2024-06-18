@@ -48,11 +48,11 @@ namespace DuckBank.Ahorros.Api.Controllers
                 Nombre = ahorroDtoIn.Nombre,
                 ClienteId = ahorroDtoIn.ClienteId
             });
-            clabe = _clabeService.ObtenerClabe(id.ToString());
-            tarjeta = _tarjetaDeDebitoService.ObtenerTarjeta();
+            // clabe = _clabeService.ObtenerClabe(id.ToString());
+            // tarjeta = _tarjetaDeDebitoService.ObtenerTarjeta();
             ahorro = await _repositorio.ObtenerPorIdAsync(id.ToString());
-            ahorro.Otros.Add("clabe", clabe);
-            ahorro.Otros.Add("tarjeta", tarjeta);
+            //ahorro.Otros.Add("clabe", clabe);
+            //ahorro.Otros.Add("tarjeta", tarjeta);
             ahorro.Otros.Add("clienteNombre", ahorroDtoIn.ClienteNombre);
             await _repositorio.ActualizarAsync(ahorro);
 
@@ -93,6 +93,27 @@ namespace DuckBank.Ahorros.Api.Controllers
                 }).ToList(),
                 Otros = ahorro.Otros
             };
+
+            return Ok(ahorroDto);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {          
+            List<Ahorro> ahorros;
+            List<AhorroDto> ahorroDto;
+
+            ahorros = await _repositorio.ObtenerAsync();            
+            ahorroDto = ahorros.Select( ahorro => new AhorroDto
+            {
+                Id = ahorro.Id,
+                Nombre = ahorro.Nombre,
+                Total = ahorro.Total,
+                Guid = ahorro.Guid,
+                ClienteId = ahorro.ClienteId,
+                ClienteNombre = ahorro.Otros.Count > 0 ? ahorro.Otros.Where(x => x.Key == "clienteNombre").First().Value : string.Empty,                
+                Otros = ahorro.Otros
+            }).ToList();
 
             return Ok(ahorroDto);
         }

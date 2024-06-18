@@ -9,7 +9,7 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureSerilog();
-
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
 // Add services to the container.
 builder.Services.AddScoped<AhorroRepositorio>();
 builder.Services.AddScoped<ClabeService>();
@@ -36,7 +36,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = @"Cuentas de ahorro",
         Contact = new OpenApiContact
         {
-            Name = "Víctor Martínez",
+            Name = "Vï¿½ctor Martï¿½nez",
             Url = new Uri("mailto:ahal_tocob@hotmail.com")
         }
     });
