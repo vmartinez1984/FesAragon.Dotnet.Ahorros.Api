@@ -139,7 +139,7 @@ namespace DuckBank.Ahorros.Api.Controllers
         /// </summary>
         /// <param name="pager"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("Paginador")]
         public async Task<IActionResult> Get([FromQuery] PagerEntity pager)
         {
             List<AhorroDto> ahorroDto;
